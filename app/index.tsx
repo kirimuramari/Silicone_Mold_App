@@ -1,12 +1,13 @@
 import { supabase } from "@/lib/supabaseClient";
 import React, { useRef, useState } from "react";
-import { Animated, StyleSheet, View } from "react-native";
+import { Animated, Image, StyleSheet, View } from "react-native";
 import { Button, Card, Text } from "react-native-paper";
 
 type Item = {
   番号: number;
   メーカー: string;
   商品名: string;
+  画像URL: string;
 };
 
 export default function HomeScreen() {
@@ -46,12 +47,22 @@ export default function HomeScreen() {
     }
     if (data && data.length > 0) {
       setItems([data[0]]);
+      console.log("data", [data[0]]);
+
+      console.log("画像URL:", items[0]?.画像URL);
     }
   };
   return (
     <View style={styles.container}>
       <Card style={styles.card}>
-        <Text style={styles.title}>レジンシリコンモールドセレクター</Text>
+        <Text style={styles.title}>シリコンモールドセレクター</Text>
+        {items.length > 0 ? (
+          <Image source={{ uri: items[0].画像URL }} style={styles.image} />
+        ) : (
+          <View style={styles.noImageBox}>
+            <Text style={styles.noImageText}>画像がありません</Text>
+          </View>
+        )}
 
         <Button
           mode="contained"
@@ -107,5 +118,25 @@ const styles = StyleSheet.create({
   resultText: {
     fontSize: 18,
     textAlign: "center",
+  },
+  image: {
+    width: 180,
+    height: 200,
+    borderRadius: 15,
+    alignSelf: "center",
+    marginTop: 15,
+    marginBottom: 10,
+  },
+  noImageBox: {
+    width: 180,
+    height: 180,
+    borderRadius: 15,
+    borderBlockColor: "#EEE",
+    alignSelf: "center",
+    marginTop: 15,
+    marginBottom: 10,
+  },
+  noImageText: {
+    color: "#888",
   },
 });
