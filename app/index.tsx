@@ -1,6 +1,7 @@
+import FadeInImage from "@/components/FadeInImage";
 import { supabase } from "@/lib/supabaseClient";
 import React, { useRef, useState } from "react";
-import { Animated, Image, StyleSheet, View } from "react-native";
+import { Animated, StyleSheet, View } from "react-native";
 import { Button, Card, Text } from "react-native-paper";
 
 type Item = {
@@ -13,6 +14,7 @@ type Item = {
 export default function HomeScreen() {
   const [items, setItems] = useState<Item[]>([]);
   const [isDecided, setDecided] = useState(false);
+  const [imageVersion, setImageVersion] = useState(0);
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
   const animateResult = (callback: () => void) => {
@@ -47,6 +49,7 @@ export default function HomeScreen() {
     }
     if (data && data.length > 0) {
       setItems([data[0]]);
+      setImageVersion((v) => v + 1);
       console.log("data", [data[0]]);
 
       console.log("画像URL:", items[0]?.画像URL);
@@ -56,11 +59,16 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <Card style={styles.card}>
         <Text style={styles.title}>シリコンモールドセレクター</Text>
-        {items.length > 0 ? (
-          <Image source={{ uri: items[0].画像URL }} style={styles.image} />
+        {items.length > 0 && items[0].画像URL ? (
+          <FadeInImage
+            source={{ uri: items[0].画像URL }}
+            style={styles.image}
+            duration={1500}
+            version={imageVersion}
+          />
         ) : (
           <View style={styles.noImageBox}>
-            <Text style={styles.noImageText}>画像がありません</Text>
+            <Text style={styles.noImageText}>画像が表示されます。</Text>
           </View>
         )}
 
@@ -120,8 +128,8 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   image: {
-    width: 180,
-    height: 200,
+    width: 220,
+    height: 180,
     borderRadius: 15,
     alignSelf: "center",
     marginTop: 15,
