@@ -15,6 +15,7 @@ export default function HomeScreen() {
   const [items, setItems] = useState<Item[]>([]);
   const [isDecided, setDecided] = useState(false);
   const [imageVersion, setImageVersion] = useState(0);
+  const [errorMessage, setErrorMessage] = useState("");
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
   const animateResult = (callback: () => void) => {
@@ -33,11 +34,20 @@ export default function HomeScreen() {
   };
 
   const fetchRandomMold = async () => {
-    const { count } = await supabase
+    setErrorMessage("");
+    const { count, error: countError } = await supabase
       .from("Silicone mold")
       .select("*", { count: "exact", head: true });
 
-    if (!count || count === 0) return;
+    if (countError) {
+      setErrorMessage(countError.message);
+      return;
+    }
+
+    if (!count || count === 0) {
+      setErrorMessage("データがありません。");
+      return;
+    }
 
     const randomIndex = Math.floor(Math.random() * count);
     const { data, error } = await supabase
@@ -45,14 +55,12 @@ export default function HomeScreen() {
       .select("*")
       .range(randomIndex, randomIndex);
     if (error) {
+      setErrorMessage(error.message);
       return;
     }
     if (data && data.length > 0) {
       setItems([data[0]]);
       setImageVersion((v) => v + 1);
-      console.log("data", [data[0]]);
-
-      console.log("画像URL:", items[0]?.画像URL);
     }
   };
   return (
@@ -68,6 +76,11 @@ export default function HomeScreen() {
           />
         ) : (
           <View style={styles.noImageBox}>
+            {errorMessage !== "" && (
+              <Text style={{ color: "red", marginTop: 10 }}>
+                {errorMessage}
+              </Text>
+            )}
             <Text style={styles.noImageText}>画像が表示されます。</Text>
           </View>
         )}
