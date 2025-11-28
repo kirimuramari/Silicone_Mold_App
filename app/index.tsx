@@ -1,14 +1,15 @@
 import FadeInImage from "@/components/FadeInImage";
 import { supabase } from "@/lib/supabaseClient";
 import React, { useRef, useState } from "react";
-import { Animated, StyleSheet, View } from "react-native";
-import { Button, Card, Text } from "react-native-paper";
+import { Animated, ScrollView, StyleSheet, View } from "react-native";
+import { Button, Card, List, RadioButton, Text } from "react-native-paper";
 
 type Item = {
   番号: number;
   メーカー: string;
   商品名: string;
   画像URL: string;
+  種類: string;
 };
 
 export default function HomeScreen() {
@@ -16,6 +17,12 @@ export default function HomeScreen() {
   const [isDecided, setDecided] = useState(false);
   const [imageVersion, setImageVersion] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
+  const [expanded, setExpanded] = useState(false);
+
+  const [moldTypeFilter, setMoldTypeFilter] = useState({
+    shaker: "none",
+    dual: "none",
+  });
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
   const animateResult = (callback: () => void) => {
@@ -35,79 +42,150 @@ export default function HomeScreen() {
 
   const fetchRandomMold = async () => {
     setErrorMessage("");
-    const { count, error: countError } = await supabase
-      .from("Silicone mold")
-      .select("*", { count: "exact", head: true });
 
-    if (countError) {
-      setErrorMessage(countError.message);
-      return;
-    }
+    //全件取得
+    const { data, error } = await supabase.from("Silicone mold").select("*");
 
-    if (!count || count === 0) {
-      setErrorMessage("データがありません。");
-      return;
-    }
-
-    const randomIndex = Math.floor(Math.random() * count);
-    const { data, error } = await supabase
-      .from("Silicone mold")
-      .select("*")
-      .range(randomIndex, randomIndex);
     if (error) {
       setErrorMessage(error.message);
       return;
     }
-    if (data && data.length > 0) {
-      setItems([data[0]]);
-      setImageVersion((v) => v + 1);
+    if (!data || data.length === 0) {
+      setErrorMessage("データがありません");
+      return;
     }
+    // 種類キーと実際の文字列の対応表
+    const TYPE_MAP: Record<string, string> = {
+      shaker: "シェイカー",
+      dual: "2液性レジン",
+    };
+
+    //フィルター関数（fetchRandomMold の中で定義）
+    const filterByType = (item: Item, typeMode: any) => {
+      const itemType = item.種類 || "EMPTY";
+
+      const onlySelected = Object.entries(typeMode)
+        .filter(([_, mode]) => mode === "only")
+        .map(([key]) => TYPE_MAP[key]);
+
+      const excludeSelected = Object.entries(typeMode)
+        .filter(([_, mode]) => mode === "exclude")
+        .map(([key]) => TYPE_MAP[key]);
+
+      if (onlySelected.length === 1) {
+        return itemType === onlySelected[0];
+      }
+      if (onlySelected.length >= 2) {
+        return onlySelected.includes(itemType);
+      }
+      for (const ex of excludeSelected) {
+        if (itemType === ex) {
+          return false;
+        }
+      }
+      return true;
+    };
+    //フィルター実行
+    const filtered = data.filter((item: Item) =>
+      filterByType(item, moldTypeFilter)
+    );
+
+    if (filtered.length === 0) {
+      setErrorMessage("条件に合うデータがありません。");
+      return;
+    }
+    //ランダム1件
+    const randomIndex = Math.floor(Math.random() * filtered.length);
+    const selected = filtered[randomIndex];
+
+    //結果反映
+    setItems([selected]);
+    setImageVersion((v) => v + 1);
   };
   return (
-    <View style={styles.container}>
-      <Card style={styles.card}>
-        <Text style={styles.title}>シリコンモールドセレクター</Text>
-        {items.length > 0 && items[0].画像URL ? (
-          <FadeInImage
-            source={{ uri: items[0].画像URL }}
-            style={styles.image}
-            duration={1500}
-            version={imageVersion}
-          />
-        ) : (
-          <View style={styles.noImageBox}>
-            {errorMessage !== "" && (
-              <Text style={{ color: "red", marginTop: 10 }}>
-                {errorMessage}
-              </Text>
-            )}
-            <Text style={styles.noImageText}>画像が表示されます。</Text>
-          </View>
-        )}
+    <ScrollView>
+      <View style={styles.container}>
+        <Card style={styles.card}>
+          <Text style={styles.title}>シリコンモールドセレクター</Text>
+          {items.length > 0 && items[0].画像URL ? (
+            <FadeInImage
+              source={{ uri: items[0].画像URL }}
+              style={styles.image}
+              duration={1500}
+              version={imageVersion}
+            />
+          ) : (
+            <View style={styles.noImageBox}>
+              {errorMessage !== "" && (
+                <Text style={styles.errorText}>{errorMessage}</Text>
+              )}
+              <Text style={styles.noImageText}>画像が表示されます。</Text>
+            </View>
+          )}
+          <List.Section>
+            <List.Accordion
+              title="検索オプション"
+              expanded={expanded}
+              onPress={() => setExpanded(!expanded)}
+            >
+              <List.Subheader>シェイカーモールド</List.Subheader>
+              <RadioButton.Group
+                onValueChange={(value) =>
+                  setMoldTypeFilter((prev) => ({
+                    ...prev,
+                    shaker: value,
+                  }))
+                }
+                value={moldTypeFilter.shaker}
+              >
+                <RadioButton.Item label="シェイカーモールドのみ" value="only" />
+                <RadioButton.Item label="除外" value="exclude" />
+                <RadioButton.Item label="指定なし" value="none" />
+              </RadioButton.Group>
+              <List.Subheader>2液性レジンモールド</List.Subheader>
+              <RadioButton.Group
+                onValueChange={(value) =>
+                  setMoldTypeFilter((prev) => ({
+                    ...prev,
+                    dual: value,
+                  }))
+                }
+                value={moldTypeFilter.dual}
+              >
+                <RadioButton.Item
+                  label="2液性レジンモールドのみ"
+                  value="only"
+                />
+                <RadioButton.Item label="除外" value="exclude" />
+                <RadioButton.Item label="指定なし" value="none" />
+              </RadioButton.Group>
+            </List.Accordion>
+          </List.Section>
 
-        <Button
-          mode="contained"
-          onPress={() => {
-            animateResult(() => {
-              setDecided(true);
-              fetchRandomMold();
-            });
-          }}
-          style={styles.okButton}
-        >
-          {isDecided ? "変更する" : "OK"}
-        </Button>
-        <Animated.View style={{ opacity: fadeAnim, marginTop: 20 }}>
-          {items.map((item, index) => (
-            <Card key={index} style={styles.resultCard}>
-              <Text style={styles.resultText}>
-                {item.メーカー}の{item.商品名}シリコンモールドを使う。
-              </Text>
-            </Card>
-          ))}
-        </Animated.View>
-      </Card>
-    </View>
+          <Button
+            mode="contained"
+            onPress={() => {
+              animateResult(() => {
+                setDecided(true);
+                fetchRandomMold();
+              });
+            }}
+            style={styles.okButton}
+          >
+            {isDecided ? "変更する" : "OK"}
+          </Button>
+          <Animated.View style={{ opacity: fadeAnim, marginTop: 20 }}>
+            {items.map((item, index) => (
+              <Card key={index} style={styles.resultCard}>
+                <Text style={styles.resultText}>
+                  {item.メーカー}の{item.商品名}シリコンモールドを使う。
+                </Text>
+              </Card>
+            ))}
+          </Animated.View>
+        </Card>
+      </View>
+    </ScrollView>
   );
 }
 
@@ -156,6 +234,12 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginTop: 15,
     marginBottom: 10,
+  },
+  errorText: {
+    fontSize: 15,
+    fontWeight: "bold",
+    color: "red",
+    marginTop: 5,
   },
   noImageText: {
     color: "#888",
