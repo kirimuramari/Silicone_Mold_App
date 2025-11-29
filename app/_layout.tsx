@@ -9,7 +9,7 @@ const theme = {
   colors: {
     ...MD3LightTheme.colors,
     primary: "#8B5CF6",
-    background: "#121212",
+    background: "#fff",
     surface: "#1E1E1E",
     onSurface: "#333333",
   },

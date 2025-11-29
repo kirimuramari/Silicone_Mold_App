@@ -19,11 +19,22 @@ export default function HomeScreen() {
   const [errorMessage, setErrorMessage] = useState("");
   const [expanded, setExpanded] = useState(false);
 
+  const radioLabel = { fontSize: 8, paddingVertical: 0 };
+
   const [moldTypeFilter, setMoldTypeFilter] = useState({
     shaker: "none",
     dual: "none",
   });
+
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const prevUrl = useRef<string | null>(null);
+
   const fadeAnim = useRef(new Animated.Value(1)).current;
+
+  const updateImage = (url: string) => {
+    prevUrl.current = imageUrl;
+    setImageUrl(url);
+  };
 
   const animateResult = (callback: () => void) => {
     Animated.timing(fadeAnim, {
@@ -111,8 +122,7 @@ export default function HomeScreen() {
             <FadeInImage
               source={{ uri: items[0].画像URL }}
               style={styles.image}
-              duration={1500}
-              version={imageVersion}
+              animate={prevUrl.current !== imageUrl}
             />
           ) : (
             <View style={styles.noImageBox}>
@@ -125,10 +135,14 @@ export default function HomeScreen() {
           <List.Section>
             <List.Accordion
               title="検索オプション"
+              titleStyle={{ color: "#555", fontSize: 12 }}
+              style={styles.searchOptionButton}
               expanded={expanded}
               onPress={() => setExpanded(!expanded)}
             >
-              <List.Subheader>シェイカーモールド</List.Subheader>
+              <List.Subheader style={styles.ListSubheaderText}>
+                シェイカーモールド
+              </List.Subheader>
               <RadioButton.Group
                 onValueChange={(value) =>
                   setMoldTypeFilter((prev) => ({
@@ -138,11 +152,25 @@ export default function HomeScreen() {
                 }
                 value={moldTypeFilter.shaker}
               >
-                <RadioButton.Item label="シェイカーモールドのみ" value="only" />
-                <RadioButton.Item label="除外" value="exclude" />
-                <RadioButton.Item label="指定なし" value="none" />
+                <RadioButton.Item
+                  label="シェイカーモールドのみ"
+                  value="only"
+                  labelStyle={radioLabel}
+                />
+                <RadioButton.Item
+                  label="除外"
+                  value="exclude"
+                  labelStyle={radioLabel}
+                />
+                <RadioButton.Item
+                  label="指定なし"
+                  value="none"
+                  labelStyle={radioLabel}
+                />
               </RadioButton.Group>
-              <List.Subheader>2液性レジンモールド</List.Subheader>
+              <List.Subheader style={styles.ListSubheaderText}>
+                2液性レジンモールド
+              </List.Subheader>
               <RadioButton.Group
                 onValueChange={(value) =>
                   setMoldTypeFilter((prev) => ({
@@ -155,9 +183,18 @@ export default function HomeScreen() {
                 <RadioButton.Item
                   label="2液性レジンモールドのみ"
                   value="only"
+                  labelStyle={radioLabel}
                 />
-                <RadioButton.Item label="除外" value="exclude" />
-                <RadioButton.Item label="指定なし" value="none" />
+                <RadioButton.Item
+                  label="除外"
+                  value="exclude"
+                  labelStyle={radioLabel}
+                />
+                <RadioButton.Item
+                  label="指定なし"
+                  value="none"
+                  labelStyle={radioLabel}
+                />
               </RadioButton.Group>
             </List.Accordion>
           </List.Section>
@@ -243,5 +280,17 @@ const styles = StyleSheet.create({
   },
   noImageText: {
     color: "#888",
+  },
+
+  searchOptionButton: {
+    backgroundColor: "#fff",
+    marginTop: 5,
+    padding: 0,
+    paddingVertical: 0,
+  },
+  ListSubheaderText: {
+    fontSize: 10,
+    padding: 0,
+    paddingVertical: 0,
   },
 });

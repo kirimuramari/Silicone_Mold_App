@@ -6,6 +6,7 @@ type Props = {
   style?: any;
   duration?: number;
   version?: number | string;
+  animate?: boolean;
 } & ImageProps;
 
 export default function FadeInImage({
@@ -13,12 +14,14 @@ export default function FadeInImage({
   style,
   duration = 1000,
   version,
+  animate = true,
   ...rest
 }: Props) {
-  const opacity = useRef(new Animated.Value(0)).current;
+  const opacity = useRef(new Animated.Value(animate ? 0 : 1)).current;
   const animRef = useRef<any>(null);
 
   const handleOnLoad = () => {
+    if (!animate) return;
     if (animRef.current && animRef.current.stop) {
       animRef.current.stop();
     }
@@ -32,8 +35,12 @@ export default function FadeInImage({
   };
 
   useEffect(() => {
-    opacity.setValue(0);
-  }, [source?.uri, version]);
+    if (animate) {
+      opacity.setValue(0);
+    } else {
+      opacity.setValue(1);
+    }
+  }, [source?.uri, version, animate]);
   return (
     <Animated.Image
       {...rest}
