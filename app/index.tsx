@@ -1,3 +1,4 @@
+import CustomRadio from "@/components/CustomRadio";
 import FadeInImage from "@/components/FadeInImage";
 import { supabase } from "@/lib/supabaseClient";
 import React, { useRef, useState } from "react";
@@ -140,62 +141,137 @@ export default function HomeScreen() {
               expanded={expanded}
               onPress={() => setExpanded(!expanded)}
             >
-              <List.Subheader style={styles.ListSubheaderText}>
-                シェイカーモールド
-              </List.Subheader>
-              <RadioButton.Group
-                onValueChange={(value) =>
-                  setMoldTypeFilter((prev) => ({
-                    ...prev,
-                    shaker: value,
-                  }))
-                }
-                value={moldTypeFilter.shaker}
-              >
-                <RadioButton.Item
-                  label="シェイカーモールドのみ"
-                  value="only"
-                  labelStyle={radioLabel}
-                />
-                <RadioButton.Item
-                  label="除外"
-                  value="exclude"
-                  labelStyle={radioLabel}
-                />
-                <RadioButton.Item
-                  label="指定なし"
-                  value="none"
-                  labelStyle={radioLabel}
-                />
-              </RadioButton.Group>
-              <List.Subheader style={styles.ListSubheaderText}>
-                2液性レジンモールド
-              </List.Subheader>
-              <RadioButton.Group
-                onValueChange={(value) =>
-                  setMoldTypeFilter((prev) => ({
-                    ...prev,
-                    dual: value,
-                  }))
-                }
-                value={moldTypeFilter.dual}
-              >
-                <RadioButton.Item
-                  label="2液性レジンモールドのみ"
-                  value="only"
-                  labelStyle={radioLabel}
-                />
-                <RadioButton.Item
-                  label="除外"
-                  value="exclude"
-                  labelStyle={radioLabel}
-                />
-                <RadioButton.Item
-                  label="指定なし"
-                  value="none"
-                  labelStyle={radioLabel}
-                />
-              </RadioButton.Group>
+              <View style={styles.optionRowContainer}>
+                <View style={styles.optionColumn}>
+                  <List.Subheader style={styles.ListSubheaderText}>
+                    シェイカーモールド
+                  </List.Subheader>
+                  <RadioButton.Group
+                    onValueChange={(value) =>
+                      setMoldTypeFilter((prev) => ({
+                        ...prev,
+                        shaker: value,
+                      }))
+                    }
+                    value={moldTypeFilter.shaker}
+                  >
+                    <CustomRadio
+                      status={
+                        moldTypeFilter.shaker === "only"
+                          ? "checked"
+                          : "unchecked"
+                      }
+                      onPress={() =>
+                        setMoldTypeFilter((prev) => ({
+                          ...prev,
+                          shaker: "only",
+                        }))
+                      }
+                      color="#7b61ff"
+                      uncheckedColor="#aaa"
+                      size={10}
+                      label="シェイカーモールドのみ"
+                      labelStyle={radioLabel}
+                    />
+                    <CustomRadio
+                      status={
+                        moldTypeFilter.shaker === "exclude"
+                          ? "checked"
+                          : "unchecked"
+                      }
+                      onPress={() =>
+                        setMoldTypeFilter((prev) => ({
+                          ...prev,
+                          shaker: "exclude",
+                        }))
+                      }
+                      color="#7b61ff"
+                      uncheckedColor="#aaa"
+                      size={10}
+                      label="除外"
+                      labelStyle={radioLabel}
+                    />
+                    <CustomRadio
+                      status={
+                        moldTypeFilter.shaker === "none"
+                          ? "checked"
+                          : "unchecked"
+                      }
+                      onPress={() =>
+                        setMoldTypeFilter((prev) => ({
+                          ...prev,
+                          shaker: "none",
+                        }))
+                      }
+                      color="#7b61ff"
+                      uncheckedColor="#aaa"
+                      size={10}
+                      label="指定なし"
+                      labelStyle={radioLabel}
+                    />
+                  </RadioButton.Group>
+                </View>
+
+                <View style={styles.optionColumn}>
+                  <List.Subheader style={styles.ListSubheaderText}>
+                    2液性レジンモールド
+                  </List.Subheader>
+                  <RadioButton.Group
+                    onValueChange={(value) =>
+                      setMoldTypeFilter((prev) => ({
+                        ...prev,
+                        dual: value,
+                      }))
+                    }
+                    value={moldTypeFilter.dual}
+                  >
+                    <CustomRadio
+                      status={
+                        moldTypeFilter.dual === "only" ? "checked" : "unchecked"
+                      }
+                      onPress={() =>
+                        setMoldTypeFilter((prev) => ({ ...prev, dual: "only" }))
+                      }
+                      color="#7b61ff"
+                      uncheckedColor="#aaa"
+                      size={10}
+                      label="2液性レジンモールドのみ"
+                      labelStyle={radioLabel}
+                    />
+                    <CustomRadio
+                      status={
+                        moldTypeFilter.dual === "exclude"
+                          ? "checked"
+                          : "unchecked"
+                      }
+                      onPress={() =>
+                        setMoldTypeFilter((prev) => ({
+                          ...prev,
+                          dual: "exclude",
+                        }))
+                      }
+                      color="#7b61ff"
+                      uncheckedColor="#aaa"
+                      size={10}
+                      label="除外"
+                      labelStyle={radioLabel}
+                    />
+                    <CustomRadio
+                      status={
+                        moldTypeFilter.dual === "none" ? "checked" : "unchecked"
+                      }
+                      onPress={() =>
+                        setMoldTypeFilter((prev) => ({ ...prev, dual: "none" }))
+                      }
+                      color="#7b61ff"
+                      uncheckedColor="#aaa"
+                      size={10}
+                      label="指定なし"
+                      labelStyle={radioLabel}
+                    />
+                  </RadioButton.Group>
+                </View>
+              </View>
             </List.Accordion>
           </List.Section>
 
@@ -288,9 +364,28 @@ const styles = StyleSheet.create({
     padding: 0,
     paddingVertical: 0,
   },
+
   ListSubheaderText: {
+    fontSize: 12,
+    color: "#555",
+  },
+  radioRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 4,
+  },
+  radioLabel: {
     fontSize: 10,
-    padding: 0,
-    paddingVertical: 0,
+    color: "#555",
+  },
+  optionRowContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    paddingHorizontal: 10,
+    gap: 20,
+  },
+  optionColumn: {
+    flex: 1,
   },
 });

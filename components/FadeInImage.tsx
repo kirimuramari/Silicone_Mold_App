@@ -12,7 +12,7 @@ type Props = {
 export default function FadeInImage({
   source,
   style,
-  duration = 1000,
+  duration = 1500,
   version,
   animate = true,
   ...rest
