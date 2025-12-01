@@ -366,7 +366,7 @@ const styles = StyleSheet.create({
   },
 
   ListSubheaderText: {
-    fontSize: 12,
+    fontSize: 10,
     color: "#555",
   },
   radioRow: {
